@@ -383,9 +383,85 @@ easier internal processing.
 
 ### Internal files
 
-On recent Epsilon versions, files named `pr.sys` and `gp.sys` seems to hold user
-preferences and have to be the first files of the storage. They shouldn't be
-removed at the risk of crashing the calculator (reboot).
+On recent Epsilon versions, files named `pr.sys` and `gp.sys` which store user preferences and have to be the first files of the storage. They shouldn't be removed at the risk of crashing the calculator (reboot).
+
+#### Global Preferences
+
+These are stored inside gp.sys, which is an abreviation of the before mentioned name. It seems to have appeared in Epsilon 23 with its binary format labeled as version 0; this version number has increased by one each update as of Epsilon 26 to reach version 3. All values inside this file are in the native endian (Little Endian).
+
+::: details GP.SYS Version 3 {open}
+| Index | Size (bytes) | Format | Name                    | Usage                                                  |
+| ----- | ------------ | ------ | ----------------------- | ------------------------------------------------------ |
+| 0x0   | 1            | uint8  | Version Number          | The version number of the file format                  |
+| 0x1   | 4            | uint32 | Display brightness      | An uint8 in practice, holds the brightness value       |
+| 0x5   | 1            | uint8  | Language                | Stores the numerical ID of the set language            |
+| 0x6   | 1            | uint8  | Country                 | Stores the numerical ID of the set country             |
+| 0x7   | 1            | custom | Packed Preferences      | Stores more "General" preferences as packed bits       |
+| 0x8   | 1            | uint8  | Significant figures     | Sets how many significant figures should be calculated |
+| 0x9   | 1            | custom | Packed Math Preferences | Stores math preferences as packed ternaries            |
+| 0xA   | 4            | uint32 | Dimming Time            | Stores the time in milliseconds until the screen dims  |
+| 0xE   | 1            | bool   | Theme                   | True if high contrast mode is enabled                  |
+| 0xF   | 1            | bool   | Magnifying              | True if magnifying is enabled                          |
+
+:::
+
+##### Field Explainations
+
+The `Display brightness` is a weird field; it can hold a uint32 and is interpreted as so by the OS and settings app, but setting it above 255 causes it to overflow to the minimum brightness on the hardware side, while in the settings you can see the brightness setting as maxed out.
+`Dimming time` is also a weird one; it holds a time in milliseconds. You'd assume that setting it to a custom value would set the dimming time to that value, but no, any dimming time you may set that isn't part of the set of 4 you're giving in the system settings will fall back to 1 min of dimming time, which seems a little stupid when you think about it.
+
+::: warning
+Be careful when tweaking the `Significant figures` field; setting it beyond 20 will always result in a calculator crash (reboot). Upon running a calculation, setting it past the default max of 14 will cause the math engine to completely fall apart.
+:::
+
+About languages and countries:
+In Epsilon, each country and language is given a numerical ID from 0 to the number of languages / countries in the firmware -1; giving an invalid ID yields funny results, especially languages, and is completely harmless. The IDs are as follows:
+- Languages
+  0. English
+  1. French
+  2. Dutch
+  3. Portugese
+  4. Italian
+  5. German
+  6. Spanish
+- Countries:
+  0. International
+  1. Canada
+  2. Germany
+  3. Spain
+  4. France
+  5. UK
+  6. Italy
+  7. Netherlands
+  8. Portugal
+  9. US
+
+Notes on the bit packed preferences:
+
+In `Packed Preferences` each setting has two states, on or off, it's basicly packed booleans, here is how they're arranged in bit order:
+  1. Seems to always be set to 1 (flipping it is untested)
+  2. Python font setting
+     - (0) Small font
+     - (1) Big font
+  3. Writing format setting
+     - (0) Natural writing
+     - (1) Inline writing
+
+For `Packed Math Preferences` each setting has 3 states, -1, 0 and 1, since ternaries use 2 bits the order is in ternary unit, a byte can store 4 ternaries:
+  1. Angle measure
+     - (-1) Gradians
+     - (0) Radians
+     - (1) Degrees
+  2. Result format
+     - (-1) Engineering
+     - (0) Decimal
+     - (1) Scientific
+  3. Complex format
+     - (-1) Exponential
+     - (0) Real
+     - (1) Cartesian
+
+#### Other files
 
 Other applications files (equations, grapher, statistics, sequences,
 user-defined variables in calculations, regressions and possibly other files)
