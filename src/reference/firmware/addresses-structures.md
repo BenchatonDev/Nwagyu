@@ -390,6 +390,7 @@ On recent Epsilon versions, files named `pr.sys` and `gp.sys` which store user p
 These are stored inside gp.sys, which is an abreviation of the before mentioned name. It seems to have appeared in Epsilon 23 with its binary format labeled as version 0; this version number has increased by one each update as of Epsilon 26 to reach version 3. All values inside this file are in the native endian (Little Endian).
 
 ::: details GP.SYS Version 3 {open}
+
 | Index | Size (bytes) | Format | Name                    | Usage                                                  |
 | ----- | ------------ | ------ | ----------------------- | ------------------------------------------------------ |
 | 0x0   | 1            | uint8  | Version Number          | The version number of the file format                  |
