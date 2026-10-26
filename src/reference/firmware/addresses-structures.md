@@ -383,7 +383,7 @@ easier internal processing.
 
 ### Internal files
 
-On recent Epsilon versions, files named `pr.sys` and `gp.sys` which store user preferences and have to be the first files of the storage. They shouldn't be removed at the risk of crashing the calculator (reboot).
+On recent Epsilon versions, files named `pr.sys` and `gp.sys` store user preferences. They have to be the first files of the storage. They shouldn't be removed at the risk of crashing the calculator (reboot).
 
 #### Global Preferences
 
